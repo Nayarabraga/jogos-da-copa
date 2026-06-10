@@ -12,7 +12,7 @@
 
 <body>
   <header>
-    <h1>Copa do Mundo 2026</h1>
+    <h1 class="main-title">Copa do Mundo 2026</h1>
 
     <!-- Botão de reset com ícone SVG inline (sem biblioteca externa) -->
     <button
@@ -35,15 +35,24 @@
     </button>
   </header>
 
-  <main class="dashboard-container" id="dashboard">
-    <section class="matches-section" aria-labelledby="title-matches">
-      <h2 class="section-title" id="title-matches">Calendário &amp; Resultados</h2>
-      <div id="matches-container" class="matches-container"></div>
-    </section>
+  <main id="dashboard">
+    <!-- Grade principal: Calendário + Grupos lado a lado no desktop -->
+    <div class="dashboard-container">
+      <section class="matches-section" aria-labelledby="title-matches">
+        <h2 class="section-title" id="title-matches">Calendário &amp; Resultados — Fases de Grupos</h2>
+        <div id="matches-container" class="matches-container"></div>
+      </section>
 
-    <section class="groups-section" aria-labelledby="title-groups">
-      <h2 class="section-title" id="title-groups">Classificação dos Grupos</h2>
-      <div id="groups-container" class="groups-grid"></div>
+      <section class="groups-section" aria-labelledby="title-groups">
+        <h2 class="section-title" id="title-groups">Fases de Grupos</h2>
+        <div id="groups-container" class="groups-grid"></div>
+      </section>
+    </div>
+
+    <!-- Seção de Chaveamento (Eliminatórias) -->
+    <section class="knockout-section" aria-labelledby="title-knockout" id="knockout-section">
+      <h2 class="section-title" id="title-knockout">Chaveamento — Eliminatórias</h2>
+      <div id="bracket-container" class="bracket"></div>
     </section>
   </main>
 
@@ -53,5 +62,6 @@
 
   <!-- JavaScript -->
   <script src="js/main.js" type="module"></script>
+  <script src="js/bracket.js" type="module"></script>
 </body>
 </html>
