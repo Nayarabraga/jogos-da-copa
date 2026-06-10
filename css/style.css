@@ -1,0 +1,46 @@
+/* -------------------------------------------------
+   Reset básico + variáveis de cores
+   ------------------------------------------------- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* Variáveis de tema (exemplo de paleta premium) */
+:root {
+  --color-primary: hsl(210, 70%, 55%);   /* azul vibrante */
+  --color-bg: hsl(210, 30%, 95%);        /* fundo claro */
+  --color-text: hsl(210, 15%, 20%);      /* texto escuro */
+  --font-base: 'Inter', system-ui, sans-serif;
+}
+
+/* Estilos globais */
+html, body {
+  height: 100%;
+  font-family: var(--font-base);
+  background-color: var(--color-bg);
+  color: var(--color-text);
+}
+
+/* Layout simples, mobile‑first */
+header,
+footer {
+  padding: 1rem;
+  text-align: center;
+  background: var(--color-primary);
+  color: #fff;
+}
+
+main {
+  flex: 1;
+  padding: 1rem;
+}
+
+/* Flex container para garantir que o footer fique no final */
+body {
+  display: flex;
+  flex-direction: column;
+}
