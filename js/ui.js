@@ -1,97 +1,7 @@
 // js/ui.js
 
 import { StorageService } from './storage.js';
-
-/**
- * Calcula a classificação de cada time com base nas partidas jogadas.
- * Retorna uma lista de times com estatísticas atualizadas.
- */
-export function calculateStandings() {
-  const data = StorageService.load();
-  const teams = data.teams || [];
-  const matches = data.matches ? Object.values(data.matches) : [];
-
-  // Inicializa o mapa de estatísticas para cada time
-  const standingsMap = {};
-  teams.forEach(team => {
-    standingsMap[team.id] = {
-      id: team.id,
-      name: team.name,
-      abbreviation: team.abbreviation,
-      group: team.group,
-      points: 0,
-      played: 0,
-      wins: 0,
-      draws: 0,
-      losses: 0,
-      goalsFor: 0,
-      goalsAgainst: 0,
-      goalDifference: 0
-    };
-  });
-
-  // Percorre as partidas para somar os pontos e gols
-  matches.forEach(match => {
-    const { teamA, teamB, golsA, golsB } = match;
-    
-    // Partida só conta se ambos os gols estiverem definidos
-    if (golsA !== null && golsB !== null) {
-      const tA = standingsMap[teamA];
-      const tB = standingsMap[teamB];
-
-      if (tA && tB) {
-        tA.played += 1;
-        tB.played += 1;
-        tA.goalsFor += golsA;
-        tA.goalsAgainst += golsB;
-        tB.goalsFor += golsB;
-        tB.goalsAgainst += golsA;
-
-        if (golsA > golsB) {
-          tA.points += 3;
-          tA.wins += 1;
-          tB.losses += 1;
-        } else if (golsA < golsB) {
-          tB.points += 3;
-          tB.wins += 1;
-          tA.losses += 1;
-        } else {
-          tA.points += 1;
-          tB.points += 1;
-          tA.draws += 1;
-          tB.draws += 1;
-        }
-      }
-    }
-  });
-
-  // Calcula o saldo de gols para todos os times
-  const standings = Object.values(standingsMap);
-  standings.forEach(t => {
-    t.goalDifference = t.goalsFor - t.goalsAgainst;
-  });
-
-  return standings;
-}
-
-/**
- * Ordena os times seguindo as regras da FIFA:
- * Pontos > Saldo de Gols > Gols Pró.
- */
-function sortTeams(teams) {
-  return teams.slice().sort((a, b) => {
-    if (b.points !== a.points) {
-      return b.points - a.points;
-    }
-    if (b.goalDifference !== a.goalDifference) {
-      return b.goalDifference - a.goalDifference;
-    }
-    if (b.goalsFor !== a.goalsFor) {
-      return b.goalsFor - a.goalsFor;
-    }
-    return a.name.localeCompare(b.name);
-  });
-}
+import { calculateStandings } from './calculator.js';
 
 /**
  * Renderiza as tabelas de classificação para cada grupo (A a H).
@@ -102,12 +12,12 @@ export function renderGroups() {
 
   container.innerHTML = '';
 
-  const standings = calculateStandings();
+  const data = StorageService.load();
+  const standings = calculateStandings(data.matches, data.teams);
   const groups = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
 
   groups.forEach(groupId => {
     const groupTeams = standings.filter(t => t.group === groupId);
-    const sortedTeams = sortTeams(groupTeams);
 
     // Cria o card do grupo
     const groupCard = document.createElement('div');
@@ -135,7 +45,7 @@ export function renderGroups() {
 
     // Corpo da tabela
     const tbody = document.createElement('tbody');
-    sortedTeams.forEach((team, index) => {
+    groupTeams.forEach((team, index) => {
       const tr = document.createElement('tr');
       
       // Destaca os 2 primeiros colocados (zona de classificação)
@@ -261,15 +171,22 @@ export function renderMatches() {
 
 /**
  * Inicializa o listener de eventos delegado nos inputs de placar.
+ * Escuta os eventos change e focusout (que propaga a partir do blur) para interatividade em tempo real.
  */
 function initScoreListener() {
   const container = document.getElementById('matches-container');
   if (!container) return;
 
-  // Evento focusout propaga a partir dos inputs quando eles perdem o foco
-  container.addEventListener('focusout', (event) => {
+  // Flag de debounce para evitar dupla execução quando focusout e change disparam juntos
+  let _debounceTimer = null;
+
+  const handleScoreUpdate = (event) => {
     const target = event.target;
-    if (target.classList.contains('score-input')) {
+    if (!target.classList.contains('score-input')) return;
+
+    // Cancela chamada pendente e agenda nova — garante execução única por interação
+    clearTimeout(_debounceTimer);
+    _debounceTimer = setTimeout(() => {
       const matchCard = target.closest('.match-card');
       if (!matchCard) return;
 
@@ -277,19 +194,39 @@ function initScoreListener() {
       const homeInput = matchCard.querySelector('.home-input');
       const awayInput = matchCard.querySelector('.away-input');
 
-      const valHome = homeInput.value.trim();
-      const valAway = awayInput.value.trim();
+      let valHome = homeInput.value.trim();
+      let valAway = awayInput.value.trim();
+
+      // Validação: garante que valores negativos não sejam aceitos
+      if (valHome !== '') {
+        const valHomeNum = parseInt(valHome, 10);
+        if (isNaN(valHomeNum) || valHomeNum < 0) {
+          valHome = '0';
+          homeInput.value = '0';
+        }
+      }
+      if (valAway !== '') {
+        const valAwayNum = parseInt(valAway, 10);
+        if (isNaN(valAwayNum) || valAwayNum < 0) {
+          valAway = '0';
+          awayInput.value = '0';
+        }
+      }
 
       // Persiste no localStorage
       StorageService.updateMatch(matchId, valHome, valAway);
 
-      // Re-renderiza a tabela de classificação
+      // Re-renderiza apenas as tabelas de classificação (re-renderização parcial)
       renderGroups();
-      
-      // Opcional: Atualiza o estilo visual dos times no card
+
+      // Atualiza o destaque visual do card da partida
       updateCardHighlight(matchCard, valHome, valAway);
-    }
-  });
+    }, 0);
+  };
+
+  // Escuta focusout (borbulha do blur) e change (setinhas do input type=number)
+  container.addEventListener('focusout', handleScoreUpdate);
+  container.addEventListener('change', handleScoreUpdate);
 
   // Retira o foco do input ao pressionar Enter para forçar o salvamento imediato
   container.addEventListener('keydown', (event) => {
