@@ -80,6 +80,28 @@ export function renderGroups() {
 }
 
 /**
+ * Formata a data de uma partida para 'DD/MM • Dia da semana • HH:mm'.
+ * @param {string} dateStr - ISO 8601 (ex: '2026-06-12T13:00:00Z')
+ * @returns {Object} { datePart, weekday, timePart }
+ */
+function formatMatchDate(dateStr) {
+  const date = new Date(dateStr);
+  const day = String(date.getUTCDate()).padStart(2, '0');
+  const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+  const hours = String(date.getUTCHours()).padStart(2, '0');
+  const minutes = String(date.getUTCMinutes()).padStart(2, '0');
+
+  const weekdays = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+  const weekday = weekdays[date.getUTCDay()];
+
+  return {
+    datePart: `${day}/${month}`,
+    weekday,
+    timePart: `${hours}:${minutes}`
+  };
+}
+
+/**
  * Renderiza o calendário de partidas, agrupando por dia.
  */
 export function renderMatches() {
@@ -134,6 +156,7 @@ export function renderMatches() {
 
       const flagA = `/assets/flags/${teamA.abbreviation.toLowerCase()}.png`;
       const flagB = `/assets/flags/${teamB.abbreviation.toLowerCase()}.png`;
+      const { datePart, weekday, timePart } = formatMatchDate(match.date);
 
       const matchCard = document.createElement('div');
       matchCard.className = 'match-card';
@@ -145,21 +168,41 @@ export function renderMatches() {
       matchCard.innerHTML = `
         <div class="match-info-header">
           <span class="match-phase">Grupo ${teamA.group}</span>
-          <span class="match-time">${match.date.substring(11, 16)}</span>
+          <span class="match-datetime">${datePart} • ${weekday} • ${timePart}</span>
         </div>
         <div class="match-teams-score">
           <div class="team home">
-            <span class="team-name">${teamA.name}</span>
-            <img src="${flagA}" alt="${teamA.name}" class="flag-icon" onerror="this.style.display='none'">
+            <img src="${flagA}" alt="Bandeira ${teamA.name}" class="flag-icon" onerror="this.style.display='none'">
+            <div class="team-names">
+              <span class="team-abbr">${teamA.abbreviation}</span>
+              <span class="team-name team-name-full">${teamA.name}</span>
+            </div>
           </div>
           <div class="score-container">
-            <input type="number" min="0" placeholder="-" class="score-input home-input" value="${valA}">
+            <input
+              type="number"
+              min="0"
+              placeholder="-"
+              class="score-input home-input"
+              value="${valA}"
+              aria-label="Placar do time mandante ${teamA.name}"
+            >
             <span class="score-separator">x</span>
-            <input type="number" min="0" placeholder="-" class="score-input away-input" value="${valB}">
+            <input
+              type="number"
+              min="0"
+              placeholder="-"
+              class="score-input away-input"
+              value="${valB}"
+              aria-label="Placar do time visitante ${teamB.name}"
+            >
           </div>
           <div class="team away">
-            <img src="${flagB}" alt="${teamB.name}" class="flag-icon" onerror="this.style.display='none'">
-            <span class="team-name">${teamB.name}</span>
+            <div class="team-names">
+              <span class="team-abbr">${teamB.abbreviation}</span>
+              <span class="team-name team-name-full">${teamB.name}</span>
+            </div>
+            <img src="${flagB}" alt="Bandeira ${teamB.name}" class="flag-icon" onerror="this.style.display='none'">
           </div>
         </div>
       `;
