@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Copa do Mundo 2026</title>
+  <meta name="description" content="Acompanhe em tempo real os resultados, placares e a classificação dos grupos da Copa do Mundo 2026.">
+  <title>Copa do Mundo 2026 – Resultados e Classificação</title>
 
   <!-- CSS -->
   <link rel="stylesheet" href="css/style.css">
@@ -12,22 +13,42 @@
 <body>
   <header>
     <h1>Copa do Mundo 2026</h1>
+
+    <!-- Botão de reset com ícone SVG inline (sem biblioteca externa) -->
+    <button
+      id="btn-reset-data"
+      class="btn-reset"
+      type="button"
+      aria-label="Resetar todos os dados da Copa"
+      title="Limpa todos os placares salvos no navegador"
+    >
+      <!-- Ícone de lixeira (SVG inline) -->
+      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+           fill="none" stroke="currentColor" stroke-width="2"
+           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <polyline points="3 6 5 6 21 6"/>
+        <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+        <path d="M10 11v6M14 11v6"/>
+        <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+      </svg>
+      Resetar Dados
+    </button>
   </header>
 
-  <main class="dashboard-container">
-    <section class="matches-section">
-      <h2 class="section-title">Calendário & Resultados</h2>
+  <main class="dashboard-container" id="dashboard">
+    <section class="matches-section" aria-labelledby="title-matches">
+      <h2 class="section-title" id="title-matches">Calendário &amp; Resultados</h2>
       <div id="matches-container" class="matches-container"></div>
     </section>
 
-    <section class="groups-section">
-      <h2 class="section-title">Classificação dos Grupos</h2>
+    <section class="groups-section" aria-labelledby="title-groups">
+      <h2 class="section-title" id="title-groups">Classificação dos Grupos</h2>
       <div id="groups-container" class="groups-grid"></div>
     </section>
   </main>
 
   <footer>
-    <p>&copy; 2026 - Todos os direitos reservados.</p>
+    <p>&copy; 2026 – Acompanhamento de partidas da Copa do Mundo.</p>
   </footer>
 
   <!-- JavaScript -->
