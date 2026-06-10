@@ -2,6 +2,8 @@
 
 import { StorageService } from './storage.js';
 import { calculateStandings } from './calculator.js';
+import { showSaveFeedback } from './main.js';
+
 
 /**
  * Renderiza as tabelas de classificação para cada grupo (A a H).
@@ -215,6 +217,9 @@ function initScoreListener() {
 
       // Persiste no localStorage
       StorageService.updateMatch(matchId, valHome, valAway);
+
+      // Feedback visual: borda verde momentânea no input editado
+      showSaveFeedback(target);
 
       // Re-renderiza apenas as tabelas de classificação (re-renderização parcial)
       renderGroups();

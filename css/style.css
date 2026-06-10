@@ -26,7 +26,10 @@
   --winner-bg: hsl(145, 60%, 96%);
   --winner-text: hsl(145, 80%, 25%);
   --loser-opacity: 0.6;
-  
+  --save-color: hsl(142, 71%, 45%);            /* verde de feedback de salvamento */
+  --reset-color: hsl(0, 72%, 51%);             /* vermelho discreto para reset */
+  --focus-outline: hsl(215, 100%, 50%);        /* azul vivo para foco acessível */
+
   --font-base: 'Outfit', system-ui, -apple-system, sans-serif;
   --transition-fast: 0.2s ease;
   --border-radius-sm: 6px;
@@ -60,6 +63,10 @@ header {
   position: relative;
   overflow: hidden;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
 }
 
 header h1 {
@@ -222,8 +229,11 @@ footer {
 }
 
 .score-input {
-  width: 42px;
-  height: 38px;
+  /* Tamanho mínimo de 44px para área de toque acessível no mobile */
+  width: 48px;
+  height: 44px;
+  min-height: 44px;
+  min-width: 44px;
   border: 1.5px solid var(--border-color);
   border-radius: var(--border-radius-sm);
   text-align: center;
@@ -232,7 +242,11 @@ footer {
   color: var(--text-primary);
   background-color: hsl(0, 0%, 98%);
   font-family: var(--font-base);
-  transition: border-color var(--transition-fast), background-color var(--transition-fast);
+  cursor: text;
+  transition:
+    border-color var(--transition-fast),
+    background-color var(--transition-fast),
+    box-shadow var(--transition-fast);
 }
 
 /* Esconder setas de input number no Chrome/Safari/Edge/Opera */
@@ -247,11 +261,24 @@ footer {
   -moz-appearance: textfield;
 }
 
-.score-input:focus {
-  outline: none;
+.score-input:hover {
   border-color: var(--primary-color);
   background-color: #fff;
-  box-shadow: 0 0 0 3px hsla(160, 100%, 26%, 0.15);
+}
+
+.score-input:focus {
+  outline: 2px solid var(--focus-outline);
+  outline-offset: 2px;
+  border-color: var(--primary-color);
+  background-color: #fff;
+  box-shadow: 0 0 0 4px hsla(215, 100%, 50%, 0.15);
+}
+
+/* Feedback visual de salvamento: borda verde momentânea */
+.score-input.saved {
+  border-color: var(--save-color);
+  box-shadow: 0 0 0 4px hsla(142, 71%, 45%, 0.2);
+  background-color: hsl(142, 60%, 97%);
 }
 
 .score-separator {
@@ -367,10 +394,98 @@ footer {
 }
 
 /* -------------------------------------------------
-   Media Queries (Responsividade)
+   Botão de Reset de Dados
+   ------------------------------------------------- */
+.btn-reset {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background-color: transparent;
+  color: hsla(0, 0%, 100%, 0.75);
+  border: 1.5px solid hsla(0, 0%, 100%, 0.35);
+  border-radius: var(--border-radius-sm);
+  padding: 0.5rem 1rem;
+  font-family: var(--font-base);
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  letter-spacing: 0.3px;
+  transition:
+    background-color var(--transition-fast),
+    border-color var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.btn-reset:hover {
+  background-color: hsla(0, 72%, 51%, 0.85);
+  border-color: hsla(0, 72%, 51%, 0.9);
+  color: #fff;
+}
+
+.btn-reset:focus {
+  outline: 2px solid var(--focus-outline);
+  outline-offset: 2px;
+}
+
+.btn-reset:active {
+  transform: scale(0.97);
+}
+
+/* -------------------------------------------------
+   Hover / Focus globais em elementos interativos
+   ------------------------------------------------- */
+a:hover,
+a:focus {
+  opacity: 0.8;
+  outline: 2px solid var(--focus-outline);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+button:focus-visible,
+input:focus-visible {
+  outline: 2px solid var(--focus-outline);
+  outline-offset: 2px;
+}
+
+/* -------------------------------------------------
+   Media Queries (Responsividade — Mobile First)
    ------------------------------------------------- */
 
-/* Tablet (Telas médias) */
+/* Mobile padrão (< 480px) — ajustes finos */
+@media (max-width: 479px) {
+  header h1 {
+    font-size: 1.5rem;
+  }
+
+  .team-name-full {
+    display: none;
+  }
+
+  .team-name-short {
+    display: inline;
+  }
+
+  .match-teams-score {
+    gap: 0.5rem;
+  }
+
+  .team {
+    gap: 0.4rem;
+    font-size: 0.85rem;
+  }
+
+  /* Tabelas de grupo não quebram o layout — rolagem horizontal */
+  .group-card {
+    overflow-x: auto;
+  }
+
+  .group-table {
+    min-width: 320px;
+  }
+}
+
+/* Tablet (Telas médias — ≥ 768px) */
 @media (min-width: 768px) {
   .dashboard-container {
     grid-template-columns: 1fr 1fr;
@@ -382,7 +497,7 @@ footer {
   }
 }
 
-/* Desktop (Telas grandes) */
+/* Desktop (Telas grandes — ≥ 1024px) */
 @media (min-width: 1024px) {
   .dashboard-container {
     grid-template-columns: 1.1fr 0.9fr;
@@ -394,21 +509,97 @@ footer {
   }
 }
 
-/* Ajustes finos para telas muito pequenas */
-@media (max-width: 480px) {
-  .team-name-full {
-    display: none;
-  }
-  
-  .team-name-short {
-    display: inline;
+/* -------------------------------------------------
+   Estilo de Impressão (Print Media)
+   ------------------------------------------------- */
+@media print {
+  /* Ocultar elementos desnecessários na impressão */
+  header .btn-reset,
+  .score-input,
+  .score-separator,
+  .score-container,
+  footer {
+    display: none !important;
   }
 
-  .match-teams-score {
-    gap: 0.5rem;
+  /* Header limpo */
+  header {
+    background: none !important;
+    color: #000 !important;
+    box-shadow: none !important;
+    padding: 0.5rem 0 1rem;
+    text-shadow: none !important;
   }
 
-  .team {
-    gap: 0.4rem;
+  header h1 {
+    font-size: 18pt;
+    color: #000 !important;
+    text-shadow: none !important;
+  }
+
+  header h1::after {
+    color: #000 !important;
+  }
+
+  /* Layout em coluna única */
+  .dashboard-container {
+    display: block !important;
+    padding: 0;
+  }
+
+  /* Seção de partidas: ocultar ao imprimir (foco na classificação) */
+  .matches-section {
+    display: none !important;
+  }
+
+  /* Tabelas de classificação ocupam toda a largura A4 */
+  .groups-section {
+    display: block !important;
+    width: 100% !important;
+  }
+
+  .groups-grid {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 12mm !important;
+  }
+
+  .group-card {
+    border: 1px solid #ccc !important;
+    box-shadow: none !important;
+    page-break-inside: avoid;
+    break-inside: avoid;
+    padding: 6mm !important;
+    overflow: visible !important;
+  }
+
+  .group-table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    font-size: 10pt !important;
+  }
+
+  .group-table th,
+  .group-table td {
+    border: 1px solid #999 !important;
+    padding: 3mm 4mm !important;
+    color: #000 !important;
+  }
+
+  .group-table th {
+    background-color: #eee !important;
+    font-size: 8pt !important;
+  }
+
+  /* Garante que bandeiras sejam impressas */
+  .flag-icon {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  /* Remove animações para impressão limpa */
+  * {
+    transition: none !important;
+    animation: none !important;
   }
 }
